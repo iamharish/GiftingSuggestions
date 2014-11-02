@@ -2,8 +2,6 @@ package hars.zappos.assignment.domains;
 
 import java.text.NumberFormat;
 
-import org.apache.log4j.Logger;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Product {
