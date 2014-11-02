@@ -1,7 +1,5 @@
 package hars.zappos.assignment.domains;
 
-import hars.zappos.assignment.aspects.GenericLoggingAspect;
-
 import java.text.NumberFormat;
 
 import org.apache.log4j.Logger;
@@ -21,7 +19,6 @@ public class Product {
 	private String productName;
 	private String brandName;
 	private NumberFormat dlrFormatter = NumberFormat.getCurrencyInstance();
-	private Logger logger = Logger.getLogger(Product.class);
 		
 	public Product(String productId, String name, String productUrl, String price){
 		this.productId = productId;
@@ -29,7 +26,6 @@ public class Product {
 		this.productUrl = productUrl;
 		this.price = price;
 		priceAsDouble = Double.parseDouble(price.substring(1));
-		logger.debug("price as double: "+price.substring(1));
 	}
 	
 	public double getPriceAsDouble() {
