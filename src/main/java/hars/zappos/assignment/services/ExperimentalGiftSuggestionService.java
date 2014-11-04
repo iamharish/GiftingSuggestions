@@ -5,6 +5,7 @@ import hars.zappos.assignment.domains.GiftSuggestionParams;
 import hars.zappos.assignment.domains.Product;
 import hars.zappos.assignment.domains.SuggestedResult;
 import hars.zappos.assignment.services.interfaces.GiftSuggestionService;
+import hars.zappos.assignment.services.interfaces.ZapposApiCallHelper;
 
 import java.util.List;
 import java.util.Random;
@@ -27,24 +28,28 @@ public class ExperimentalGiftSuggestionService implements GiftSuggestionService 
 	private Logger logger = Logger.getLogger(ExperimentalGiftSuggestionService.class);
 	private final int[] ranges = {50, 100, 200, 200};
 	private Random random;
-	
+	private final int MAXAPICALLS = 5;
 
 	@Override
 	public SortedSet<SuggestedResult> getSuggestedResults(GiftSuggestionParams params) throws Exception {
 		SuggestedResult result = new SuggestedResult();
 		random = new Random();
 		SortedSet<SuggestedResult> suggestions = new TreeSet<SuggestedResult>(new PriceComparator());
-		String filters = getFilters(params);
+		StringBuilder filters = new StringBuilder("&page=");//getFilters(params);
 		StringBuilder uri = new StringBuilder(env.getProperty("searchApi"));
-		if(apiCallHelper.execute(uri.toString(), filters)){
-			List<Product> product = apiCallHelper.getResults();
-			int minSuggestions = Integer.parseInt(env.getProperty("minSuggestions"));
-			int maxCount = 0;
-			while(minSuggestions > suggestions.size() && maxCount < 10){
-				maxCount++;
-				logger.debug("Attempt "+maxCount);
-				result = addProducts(params.getMaxBudget(), product, params.getNumOfGifts());
-				suggestions.add(result);
+		int apiCallsMade = 1;
+		while(suggestions.size() < 5 && apiCallsMade <= MAXAPICALLS){
+			filters.append(apiCallsMade);
+			if(apiCallHelper.execute(uri.toString(), filters.toString())){
+				List<Product> product = apiCallHelper.getResults();
+				int minSuggestions = Integer.parseInt(env.getProperty("minSuggestions"));
+				int maxCount = 0;
+				while(minSuggestions > suggestions.size() && maxCount < 10){
+					maxCount++;
+					logger.debug("Attempt "+maxCount);
+					result = addProducts(params.getMaxBudget(), product, params.getNumOfGifts());
+					suggestions.add(result);
+				}
 			}
 		}
 		return suggestions;
@@ -80,18 +85,14 @@ public class ExperimentalGiftSuggestionService implements GiftSuggestionService 
 		SuggestedResult suggestedResult = new SuggestedResult();
 		double price = 0;
 		int maxSearchCount = 0;
-		logger.debug(maxPrice+" "+price+" "+count);
-		logger.debug("products "+products);
-		logger.debug(maxPrice < price && count < 9);
 		while(maxPrice > price && maxSearchCount < 9 && suggestedResult.getProducts().size() < count){
-			logger.debug("battle begins");
 			maxSearchCount++;
 			Product product = getRandomProduct(products);
 			logger.debug("Validating if a product "+product+" can be added when price is "+price+" and maxPrice is "+maxPrice);
 			if(maxPrice > product.getPriceAsDouble()+price){
-				logger.info("Adding product"+product);
 				suggestedResult.getProducts().add(product);
 				suggestedResult.setPrice(price += product.getPriceAsDouble());
+				logger.debug("MaxPrice"+maxPrice+" Current price"+price+" "+suggestedResult);
 			}
 		}
 		return suggestedResult;
@@ -100,7 +101,6 @@ public class ExperimentalGiftSuggestionService implements GiftSuggestionService 
 	private Product getRandomProduct(List<Product> products){
 		int size = products.size();
 		int index = random.nextInt(size); 
-		logger.debug("Picking product at "+index);
 		return products.get(index);
 	}
 

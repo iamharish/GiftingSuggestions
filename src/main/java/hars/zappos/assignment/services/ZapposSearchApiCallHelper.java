@@ -2,6 +2,7 @@ package hars.zappos.assignment.services;
 
 import hars.zappos.assignment.domains.Product;
 import hars.zappos.assignment.domains.ProductSearchResponse;
+import hars.zappos.assignment.services.interfaces.ZapposApiCallHelper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,8 +52,8 @@ public class ZapposSearchApiCallHelper extends RestTemplate implements ZapposApi
 		URLCodec codec = new URLCodec();
 		for(int i=0;i<keys.length;i++){
 			if(null != filters && !filters.isEmpty()){
-				logger.info("calling"+uri+keys[i]+codec.encode(filters));
-				data = getForObject(uri+keys[i]+codec.encode(filters), ProductSearchResponse.class);
+				logger.info("calling"+uri+keys[i]+filters);
+				data = getForObject(uri+keys[i]+filters, ProductSearchResponse.class);
 			}
 			else {
 				logger.info("calling"+uri+keys[i]);

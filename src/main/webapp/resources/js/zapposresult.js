@@ -19,15 +19,17 @@ $(document).ready(function () {
 		 	};
 		 	$("#resultsSection").show();
 		 	$("#loading").show();
-			$.get( "suggestedResults/10/99.99", function( data ) {
+			$.get( "suggestedResults/"+numOfItems+"/"+budget, function( data ) {
 			  console.log( data );
 			  $.each(data, function( index, result ) {
 				  var idForTR = "row"+index;
-				  $("#resultsRowParentFieldId").append("<tr id="+idForTR+"></tr>");
-				  $("#"+idForTR).append("<td>"+result.price.toFixed(2)+"</td>");
-				  $.each(result.products, function( productIndex, product ) {
-					  $("#"+idForTR).append("<td><a href="+product.productUrl+" target='_blank'>"+product.name+"</a></td>");
-				  });
+				  if(result.price > 0){
+					  $("#resultsRowParentFieldId").append("<tr id="+idForTR+"></tr>");
+					  $("#"+idForTR).append("<td>"+result.price.toFixed(2)+"</td>");
+					  $.each(result.products, function( productIndex, product ) {
+						  $("#"+idForTR).append("<td><a href="+product.productUrl+" target='_blank'>"+product.name+"</a></td>");
+					  });
+			  	   }
 			  });
 			  $("#loading").hide();
 			});		 	
